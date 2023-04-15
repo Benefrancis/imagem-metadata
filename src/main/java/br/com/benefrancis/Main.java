@@ -34,27 +34,36 @@ public class Main {
                 System.out.println(f.getName() + "\n");
 
                 if (f.isFile()) {
+
                     Metadata metadata = ImageMetadataReader.readMetadata(f);
 
                     for (Directory directory : metadata.getDirectories()) {
-                        /*
-                        Poderíamos pegar a tag com name = "GPS" e verificar se a fotografia foi tirada no mesmo
-                        endereço da casa da pessoa
 
-                        Poderíamos integrar com sistemas de Inteligência Artificial:
+                        /*
+                       - Poderíamos pegar a tag com name = "GPS" e verificar se a fotografia foi tirada no mesmo
+                        endereço ou nas proximidades da casa da pessoa
+
+                       - Poderíamos integrar com sistemas de Inteligência Artificial:
                         https://cloud.google.com/vision?hl=pt-br
                         */
 
                         ExifSubIFDDirectory d = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-
-
-                        LocalDateTime dia = LocalDateTime
-                                .ofInstant(d.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
-                                        .toInstant(), ZoneId.of("America/Sao_Paulo"));
+                        LocalDateTime dia = null;
+                        if (d != null)
+                            dia = LocalDateTime
+                                    .ofInstant(d.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
+                                            .toInstant(), ZoneId.of("America/Sao_Paulo"));
 
                         for (Tag tag : directory.getTags()) {
                             //Coloquei o horário com +3 para bater com o horário exato em que a foto foi tirada:
-                            System.out.format("[%s] [%s] [%s] - %s = %s%n", dia.plusHours(3).format(DateTimeFormatter.ISO_DATE_TIME), tag.getTagType(), directory.getName(), tag.getTagName(), tag.getDescription());
+                            //Se dia = "-" então deve-se duvidar da origem
+                            System.out.format("[%s] [%s] [%s] - %s = %s%n",
+                                    dia != null ? dia.plusHours(3).format(DateTimeFormatter.ISO_DATE_TIME) : "-",
+                                    tag.getTagType(),
+                                    directory.getName(),
+                                    tag.getTagName(),
+                                    tag.getDescription()
+                            );
                         }
                         System.out.println("\n");
                         if (directory.hasErrors()) {
