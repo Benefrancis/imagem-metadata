@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Main {
 
@@ -22,7 +23,7 @@ public class Main {
 
         if (diretorio.isDirectory()) {
 
-            files = Arrays.asList(diretorio.listFiles());
+            files = Arrays.asList(Objects.requireNonNull(diretorio.listFiles()));
 
             for (File f : files) {
 
@@ -32,22 +33,22 @@ public class Main {
                     Metadata metadata = ImageMetadataReader.readMetadata(f);
 
                     for (Directory directory : metadata.getDirectories()) {
+                        /*
+                        Poderíamos pegar a tag com name = "GPS" e verificar se a fotografia foi tirada no mesmo
+                        endereço da casa da pessoa
+                        */
                         for (Tag tag : directory.getTags()) {
-                            System.out.format("[%s] - %s = %s%n",
-                                    directory.getName(), tag.getTagName(), tag.getDescription());
+                            System.out.format("[%s] [%s] - %s = %s%n", tag.getTagType(), directory.getName(), tag.getTagName(), tag.getDescription());
                         }
+                        System.out.println("\n");
                         if (directory.hasErrors()) {
                             for (String error : directory.getErrors()) {
-                                System.err.format("ERROR: %s", error);
+                                System.err.format("ERROR: %s%n%n", error);
                             }
                         }
                     }
                 }
             }
-
-
         }
-
-
     }
 }
