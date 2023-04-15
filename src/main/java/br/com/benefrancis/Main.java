@@ -6,9 +6,13 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -36,9 +40,21 @@ public class Main {
                         /*
                         Poderíamos pegar a tag com name = "GPS" e verificar se a fotografia foi tirada no mesmo
                         endereço da casa da pessoa
+
+                        Poderíamos integrar com sistemas de Inteligência Artificial:
+                        https://cloud.google.com/vision?hl=pt-br
                         */
+
+                        ExifSubIFDDirectory d = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+
+
+                        LocalDateTime dia = LocalDateTime
+                                .ofInstant(d.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
+                                        .toInstant(), ZoneId.of("America/Sao_Paulo"));
+
                         for (Tag tag : directory.getTags()) {
-                            System.out.format("[%s] [%s] - %s = %s%n", tag.getTagType(), directory.getName(), tag.getTagName(), tag.getDescription());
+                            //Coloquei o horário com +3 para bater com o horário exato em que a foto foi tirada:
+                            System.out.format("[%s] [%s] [%s] - %s = %s%n", dia.plusHours(3).format(DateTimeFormatter.ISO_DATE_TIME), tag.getTagType(), directory.getName(), tag.getTagName(), tag.getDescription());
                         }
                         System.out.println("\n");
                         if (directory.hasErrors()) {
